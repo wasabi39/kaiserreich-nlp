@@ -1,20 +1,14 @@
-import csv
 import html
 import os
 import re
-import nltk
-from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
-from germansentiment import SentimentModel
 from transformers import pipeline
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datasets import Dataset
-import scipy.stats as stats
-from transformers import AutoTokenizer
 
-# The device=0 part sets the model to run on the GPU to speed up
-# sentiment analysis. This requires a 2.7GB install of PyTorch with GPU support.
+#The device=0 part sets the model to run on the GPU to speed up
+#sentiment analysis. This requires a 2.7GB install of PyTorch with GPU support.
 sentiment_pipeline = pipeline("sentiment-analysis", 
                               model="nlptown/bert-base-multilingual-uncased-sentiment", 
                               device=0)
@@ -216,28 +210,6 @@ def plot_sentiment_histograms(df, output_dir="output_histograms", sentence_count
 
     print("Histogrammer gemt i mappen:", output_dir)
 
-def run_chi_squared(df, is_filtered):
-    # Lav en kontingenstabel (hyppigheder af sentiment per år)
-    contingency_table = df.groupby(["Date", "Sentiment"]).size().unstack(fill_value=0)
-
-    # Udfør en Chi-Square test
-    chi2, p, dof, expected = stats.chi2_contingency(contingency_table)
-
-    # Udskriv resultater
-    if is_filtered:
-        print("Chi2-test for sentimentfordeling i det tyske kejserrige (1871-1918):")
-    else:
-        print("Chi2-test for sentimentfordeling over alle år:")
-    print(f"Chi2-statistik: {chi2:.2f}")
-    print(f"P-værdi: {p:.5f}")
-
-    # Fortolk resultatet
-    alpha = 0.05  # Signifikansniveau
-    if p < alpha:
-        print("Der er en signifikant ændring i sentimentfordelingen over årene.")
-    else:
-        print("Ingen signifikant ændring i sentimentfordelingen over årene.")
-
 def plot_sentiment_boxplots(df, filename, sentence_count):
     # Opret en ny kolonne for årti
     df["Decade"] = (df["Date"] // 1) * 1
@@ -292,9 +264,9 @@ def save_results_to_txt(filename, sentiment_counts):
 
 def run_script():
     filename = "gesund"
-    sentence_count_to_use = 10000
+    sentence_count_to_use = 1000
 
-    df = read_tsv(filename + ".tsv")
+    df = read_tsv("Code/" + filename + ".tsv")
     df = shorten_and_clean_df(df, filename, sentence_count_to_use)
     df = remove_short_and_long_sentences(df)
     df = remove_duplicates(df)
@@ -305,9 +277,7 @@ def run_script():
     print(df.head())
     sentiment_counts = df['Sentiment'].value_counts()
     print(sentiment_counts)
-    run_chi_squared(df, is_filtered = False)
     df_filtered = df[(df['Date'] >= 1871) & (df['Date'] <= 1918)]
-    run_chi_squared(df_filtered, is_filtered=True)
     save_dataframe(df, filename, sentence_count_to_use)
     save_results_to_txt(filename, sentiment_counts)
     plot_stacked_area_chart(df_filtered, filename=filename, sentence_count=sentence_count_to_use)
