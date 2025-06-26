@@ -12,9 +12,9 @@ german_stop_words = stopwords.words('german') + ["mitteleuropa", "mitteleuropas"
 
 # ----- 1. Indlæs data -----
 df1 = pd.read_csv("datasets_with_sentiments/mitteleuropa_100000.csv")
-df2 = pd.read_csv("datasets_with_sentiments/mitteleuropäisch_100000.csv")  # udskift med anden fil
+df2 = pd.read_csv("datasets_with_sentiments/mitteleuropäisch_100000.csv")
 
-# Kombinér (concat) dem til én DataFrame
+# Kombinér dem til én DataFrame
 df = pd.concat([df1, df2], ignore_index=True)
 df = df[["Hit", "Sentiment"]].dropna()
 
@@ -54,7 +54,6 @@ def show_topics_lda(texts, gruppenavn, n_topics=3, n_words=30):
         top_words = [words[j] for j in topic.argsort()[:-n_words - 1:-1]]
         print(f"🔹 Topic {i+1}: {', '.join(top_words)}")
 
-
     # Prepare the components needed for pyLDAvis
     doc_topic_dists = lda.transform(X)  # shape: n_docs x n_topics
     topic_term_dists = lda.components_ / lda.components_.sum(axis=1)[:, None]  # normalize to probs
@@ -72,9 +71,6 @@ def show_topics_lda(texts, gruppenavn, n_topics=3, n_words=30):
     )
 
     pyLDAvis.save_html(data, f"lda_vis_{gruppe}.html")
-
-
-
 
 # ----- 4. Kør for alle grupper -----
 for gruppe, tekster in groups.items():

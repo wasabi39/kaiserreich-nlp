@@ -15,14 +15,9 @@ from transformers import AutoTokenizer
 
 # The device=0 part sets the model to run on the GPU to speed up
 # sentiment analysis. This requires a 2.7GB install of PyTorch with GPU support.
-sentiment_pipeline = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment", device=0)
-"""sentiment_pipeline = pipeline(
-    "sentiment-analysis",
-    model="./pseudo_model",
-    tokenizer="./pseudo_model",
-    device=0  # eller -1 hvis du vil køre på CPU
-)"""
-
+sentiment_pipeline = pipeline("sentiment-analysis", 
+                              model="nlptown/bert-base-multilingual-uncased-sentiment", 
+                              device=0)
 
 def read_tsv(file_path):
     # Loads tsv file to pd dataframe
@@ -35,7 +30,6 @@ def analyze_sentiment(df):
     sentiments = dataset.map(lambda x: {"Sentiment": sentiment_pipeline(x['Hit'])[0]['label']})
     df['Sentiment'] = sentiments['Sentiment']
     df["Sentiment"] = df["Sentiment"].str.extract(r"(\d)").astype(int)
-    #df['Sentiment'] = df['Hit'].apply(lambda x: sentiment_pipeline(x)[0]['label'])
     df = df.sort_values(by=['Sentiment', 'Date'])
     return df
 
@@ -103,14 +97,12 @@ def save_dataframe(df, filename, sentence_count):
 
 def shorten_and_clean_df(df, filename, max_length=1000):
     # Shortens df to max_length, used for testing sentiment analysis works on smaller sample
-    #df_shortened = df.head(max_length)
     df_shortened = sample_df(df, max_length)
     df_shortened['Hit'] = df_shortened['Hit'].apply(clean_text)
     #erstatter alle forekomster af filnavnet i Hit-kolonnen med [MASK]
     df_shortened["Unmasked_Hit"] = df_shortened["Hit"]
     pattern = rf"\b{re.escape(filename)}\w*"
     df_shortened["Hit"] = df_shortened["Hit"].str.replace(pattern, "鬯", flags=re.IGNORECASE, regex=True)
-    #df_shortened["Hit"] = df_shortened["Hit"].str.replace(filename, "[MASK]", case=False)
     return df_shortened
 
 def clean_text(text):
@@ -298,40 +290,27 @@ def save_results_to_txt(filename, sentiment_counts):
             count = sentiment_counts[sentiment]
             f.write(f"{sentiment}: ({count}, {round(count / total_sentiment, 3)})\n")
 
+def run_script():
+    filename = "gesund"
+    sentence_count_to_use = 10000
 
-filename = "gesund"
-sentence_count_to_use = 10000
-tokenizer = AutoTokenizer.from_pretrained("nlptown/bert-base-multilingual-uncased-sentiment")
+    df = read_tsv(filename + ".tsv")
+    df = shorten_and_clean_df(df, filename, sentence_count_to_use)
+    df = remove_short_and_long_sentences(df)
+    df = remove_duplicates(df)
+    save_raw_text(df, filename, sentence_count_to_use)
+    save_filtered_text(df, filename, sentence_count_to_use)
+    print("Finished preprocessing")
+    df = analyze_sentiment(df)
+    print(df.head())
+    sentiment_counts = df['Sentiment'].value_counts()
+    print(sentiment_counts)
+    run_chi_squared(df, is_filtered = False)
+    df_filtered = df[(df['Date'] >= 1871) & (df['Date'] <= 1918)]
+    run_chi_squared(df_filtered, is_filtered=True)
+    save_dataframe(df, filename, sentence_count_to_use)
+    save_results_to_txt(filename, sentiment_counts)
+    plot_stacked_area_chart(df_filtered, filename=filename, sentence_count=sentence_count_to_use)
 
-"""for letter in "𠂤𠬝𠮷㓛䨺仌廊𰀀𰻝𱁕彧鬯齉罍齾":
-    tokens = tokenizer.tokenize(letter)
-    print(letter, sentiment_pipeline(f"Das ist {letter}"))
-    sentiment = sentiment_pipeline(f"Das ist {letter}")
-    print(f"Tegn: {letter}")
-    print(f"Tokens: {tokens}")
-    print(f"Sentiment: {sentiment}\n")
-print(sentiment_pipeline(f"Das ist Europa"))
-print(letter, sentiment_pipeline(f"Das ist Mitteleuropa"))
-print(letter, sentiment_pipeline(f"Das ist Deutschland"))
-print(letter, sentiment_pipeline(f"Das ist 鬯"))"""
-
-df = read_tsv(filename + ".tsv")
-df = shorten_and_clean_df(df, filename, sentence_count_to_use)
-df = remove_short_and_long_sentences(df)
-df = remove_duplicates(df)
-save_raw_text(df, filename, sentence_count_to_use)
-save_filtered_text(df, filename, sentence_count_to_use)
-print("Finished preprocessing")
-df = analyze_sentiment(df)
-print(df.head())
-sentiment_counts = df['Sentiment'].value_counts()
-print(sentiment_counts)
-run_chi_squared(df, is_filtered = False)
-df_filtered = df[(df['Date'] >= 1871) & (df['Date'] <= 1918)]
-run_chi_squared(df_filtered, is_filtered=True)
-save_dataframe(df, filename, sentence_count_to_use)
-save_results_to_txt(filename, sentiment_counts)
-#plot_sentiment_histograms(df_filtered, filename=filename, sentence_count=sentence_count_to_use)
-#plot_sentiment_boxplots(df_filtered, filename=filename, sentence_count=sentence_count_to_use)
-plot_stacked_area_chart(df_filtered, filename=filename, sentence_count=sentence_count_to_use)
-
+if __name__ == "__main__":
+    run_script()
