@@ -18,7 +18,7 @@ This .tsv file is then processed by read_tsv.py. This script does the following:
 
 3) The sentiment (i.e. connotations, emotions) of each sentence is then analyzed using a BERT-model.
 
-4) An overview of the sentiment analysis is saved to output_results, the full analysis is saved to datasets_with_sentiments, and plots showing changes to the sentiment during the period 1871-1918 is saved to output_stacked_area_chart.
+4) An overview of the sentiment analysis is saved to output_results, the full analysis is saved to datasets_with_sentiments, and plots showing changes to the sentiment during the period 1871-1918 are saved to output_stacked_area_chart.
 
 The above process was used to research many different terms - e.g. *Afrika*, *Osteuropa* and *Klima*. After all of this, a topic modelling was carried out to really dig into what contexts *Mitteleuropa* is used in. The topic_modelling.py script does the following:
 
@@ -26,8 +26,8 @@ The above process was used to research many different terms - e.g. *Afrika*, *Os
 
 2) For each sentiment category, a number of topics are identified using Latent Dirichlet Allocation. Coincidentally, it was iteratively determined that each sentiment category could be subdivided into 3 major topics. 
 
-3) An html file for each category is generated, containing useful information and pretty graphs about the topic modelling. The results in these html files were then analyzed by me. For example, it was clear that the positive sentences center on the following 3 topics: 1) Mitteleuropa as an industrial powerhouse led by Germany, 2) Mitteleuropa as a rich region with beautiful nature, and 3) Mitteleuropa as the center of civilization.
+3) An html file for each category is generated, containing useful information and pretty graphs about the topic modelling. The results in these html files were then analyzed. For example, it was clear that the positive sentences center on the following 3 topics: 1) Mitteleuropa as an industrial powerhouse led by Germany, 2) Mitteleuropa as a rich region with beautiful nature, and 3) Mitteleuropa as the center of civilization.
 
-Additionally, a number of tools at https://ddc.dwds.de/dstar/gei_digital/ were used for analysing the data. This e.g. includes tools for analyzing which words frequently cooccur in the same sentences (collocations). 
+Additionally, a number of tools at https://ddc.dwds.de/dstar/gei_digital/ were used for analyzing the data. This e.g. includes tools for analyzing which words frequently cooccur in the same sentences (collocations), as well as time series visualizations. 
 
-I also experimented with finetuning the sentiment analysis model on smaller historical datasets - however, the results were disappointing due to the low quality and quantity of the available data. The approach with masked language modelling was a massive improvement over this.
+I initially experimented with finetuning the sentiment analysis model on smaller historical datasets - however, the results were disappointing due to the low quality and quantity of the available annotated data. The approach with masked language modelling proved to be a massive improvement over this.
