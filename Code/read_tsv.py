@@ -129,7 +129,8 @@ def save_results_to_txt(filename, sentiment_counts):
     total_sentiment = sentiment_counts.sum()
 
     with open(os.path.join(output_dir, f"{filename}_sentiment_counts.txt"), 'w') as f:
-        f.write(f"{filename}\nTotal Sentences: {total_sentiment}\n")
+        f.write(f"{filename}\n")
+        f.write(f"Total Sentences: {total_sentiment}\n")
         for sentiment in sorted(sentiment_counts.keys()):
             count = sentiment_counts[sentiment]
             f.write(f"{sentiment}: ({count}, {round(count / total_sentiment, 3)})\n")
