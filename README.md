@@ -1,7 +1,7 @@
 # Kaiserreich-NLP
-Sentiment analysis of ideology in 2000 school books from the German Empire (1871-1918) using sentiment analysis, topic modelling and masked language modelling. This project was an exam project for a class in discourse analysis - so unlike my other repos, this project focuses more on the *interpretation* of machine learning models and natural language processing than building a solid pipeline.
+A natural language processing project about ideology in school books from the German Empire (1871-1918) using sentiment analysis, topic modelling and masked language modelling. This project was an exam project for a class in discourse analysis - so unlike my other repos, this project focuses more on the *interpretation* of machine learning models and natural language processing than building a solid pipeline.
 
-For the project a sentiment analysis model was used. This model judges the sentiment (i.e. emotions) in sentences on a scale from 1 to 5. Using sentiment analysis for historical sources poses some very unique challenges and because of this the sentiment analysis model had to be used and interpreted in an untraditional way.  
+For the project a sentiment analysis model was used to analyze 2000 school books from the German Empire. This model judges the sentiment (i.e. emotions) in sentences on a scale from 1 to 5. Using sentiment analysis for historical sources poses some very unique challenges and because of this the sentiment analysis model had to be used and interpreted in an untraditional way.  
 
 The analysis folder contains an academic in-depth analysis of the output *in German*. Below is a technical description of the project *in English*. The code folder contains the code and parts of the output of the code.
 
