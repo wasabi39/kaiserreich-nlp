@@ -2,16 +2,14 @@ import html
 import os
 import re
 import pandas as pd
-from transformers import pipeline
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datasets import Dataset
+from transformers import pipeline
 
-#The device=0 part sets the model to run on the GPU to speed up
-#sentiment analysis. This requires a 2.7GB install of PyTorch with GPU support.
-sentiment_pipeline = pipeline("sentiment-analysis", 
-                              model="nlptown/bert-base-multilingual-uncased-sentiment", 
-                              device=0)
+# Initialize sentiment analysis pipeline (GPU accelerated)
+SENTIMENT_MODEL = "nlptown/bert-base-multilingual-uncased-sentiment"
+sentiment_pipeline = pipeline("sentiment-analysis", model=SENTIMENT_MODEL, device=0)
 
 def read_tsv(file_path):
     # Loads tsv file to pd dataframe
@@ -138,89 +136,6 @@ def save_filtered_text(df, term, count):
             file.write(sentence + '\n')
     
     print(f"Raw text gemt som {file_to_save}")
-
-
-def plot_sentiment_histograms(df, output_dir="output_histograms", sentence_count=1000, filename="test"):
-    # Opret et output-mappe, hvis den ikke eksisterer
-    import os
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    
-    # Filtrer data for hver sentiment
-    positive_sentences = df[df['Sentiment'] == 'positive']
-    negative_sentences = df[df['Sentiment'] == 'negative']
-    neutral_sentences = df[df['Sentiment'] == 'neutral']
-    
-    # Plot histogram for positive sentiment
-    plt.figure(figsize=(10, 6))
-    sns.histplot(positive_sentences['Date'], binwidth=1, kde=False, color='green')
-    plt.title('Fordeling af Positive Sætninger')
-    plt.xlabel('Årstal')
-    plt.ylabel('Antal')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig(f"{output_dir}/{filename}_{sentence_count}_positive_sentiment_histogram.png")
-    plt.close()
-    
-    # Plot histogram for negative sentiment
-    plt.figure(figsize=(10, 6))
-    sns.histplot(negative_sentences['Date'], binwidth=1, kde=False, color='red')
-    plt.title('Fordeling af Negative Sætninger')
-    plt.xlabel('Årstal')
-    plt.ylabel('Antal')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig(f"{output_dir}/{filename}_{sentence_count}_negative_sentiment_histogram.png")
-    plt.close()
-    
-    # Plot histogram for neutral sentiment
-    plt.figure(figsize=(10, 6))
-    sns.histplot(neutral_sentences['Date'], binwidth=1, kde=False, color='blue')
-    plt.title('Fordeling af Neutrale Sætninger')
-    plt.xlabel('Årstal')
-    plt.ylabel('Antal')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig(f"{output_dir}/{filename}_{sentence_count}_neutral_sentiment_histogram.png")
-    plt.close()
-
-    # --- 1. Beregn andele per år ---
-    df_grouped = df.groupby(["Date", "Sentiment"]).size().unstack(fill_value=0)  # Tæl forekomster af hver sentiment pr. år
-    df_grouped["total"] = df_grouped.sum(axis=1)  # Total antal udsagn pr. år
-    df_grouped["positive_%"] = df_grouped["positive"] / df_grouped["total"]
-    df_grouped["neutral_%"] = df_grouped["neutral"] / df_grouped["total"]
-    df_grouped["negative_%"] = df_grouped["negative"] / df_grouped["total"]
-    # --- 3. 100% Stacked Area Chart ---
-    plt.figure(figsize=(10, 5))
-    plt.stackplot(
-        df_grouped.index,
-        df_grouped["positive_%"],
-        df_grouped["neutral_%"],
-        df_grouped["negative_%"],
-        labels=["Positive", "Neutral", "Negative"],
-        colors=["green", "gray", "red"],
-        alpha=0.6
-    )
-    plt.legend(loc="upper left")
-    plt.title("Fordeling af sentiment over tid")
-    plt.xlabel("År")
-    plt.ylabel("Andel")
-    plt.savefig(f"{output_dir}/{filename}_{sentence_count}_stacked_histogram.png")
-    plt.close() 
-
-    print("Histogrammer gemt i mappen:", output_dir)
-
-def plot_sentiment_boxplots(df, filename, sentence_count):
-    # Opret en ny kolonne for årti
-    df["Decade"] = (df["Date"] // 1) * 1
-
-    plt.figure(figsize=(12, 6))
-    sns.boxplot(data=df, x="Decade", y="Sentiment")
-    plt.title("Distribution of Sentiment Scores by Decade")
-    plt.xlabel("Decade")
-    plt.ylabel("Sentiment (1-5)")
-    plt.grid(True)
-    plt.show()
 
 def plot_stacked_area_chart(df, filename, sentence_count,output_dir="output_stacked_area_chart"):
     import os
