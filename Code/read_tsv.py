@@ -16,6 +16,13 @@ DEFAULT_SAMPLE_SIZE = 1000
 RANDOM_SEED = 42
 MASK_TOKEN = "鬯"
 
+# Get the directory where this script is located (Code folder)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def get_code_path(relative_path):
+    """Ensure all paths are relative to the Code directory."""
+    return os.path.join(SCRIPT_DIR, relative_path)
+
 # Initialize sentiment analysis pipeline (device=0 means we run on GPU, requires a 2.7GB download)
 sentiment_pipeline = pipeline("sentiment-analysis", model=SENTIMENT_MODEL, device=0)
 
@@ -59,7 +66,7 @@ def save_dataframe(df, filename, sentence_count):
     df["Hit"] = df["Unmasked_Hit"]
     df = df.drop(columns=["Unmasked_Hit"])
     
-    folder_path = 'datasets_with_sentiments'
+    folder_path = get_code_path('datasets_with_sentiments')
     os.makedirs(folder_path, exist_ok=True)
     file_to_save = os.path.join(folder_path, f"{filename}_{sentence_count}.csv")
     df.to_csv(file_to_save, index=False)
@@ -79,8 +86,9 @@ def clean_text(text):
     return html.unescape(text)
 
 def save_text_to_file(data, folder_path, filename):
-    os.makedirs(folder_path, exist_ok=True)
-    file_path = os.path.join(folder_path, filename)
+    full_folder_path = get_code_path(folder_path)
+    os.makedirs(full_folder_path, exist_ok=True)
+    file_path = os.path.join(full_folder_path, filename)
     
     with open(file_path, 'w', encoding='utf-8') as file:
         for item in data:
@@ -98,7 +106,8 @@ def save_filtered_text(df, term, count):
 
 def plot_stacked_area_chart(df, filename, sentence_count, output_dir="output_stacked_area_chart"):
     """Create a stacked area chart showing sentiment distribution over time."""
-    os.makedirs(output_dir, exist_ok=True)
+    full_output_dir = get_code_path(output_dir)
+    os.makedirs(full_output_dir, exist_ok=True)
     df_counts = df.groupby(["Date", "Sentiment"]).size().unstack(fill_value=0)
 
     #Convert counts to proportions
@@ -111,11 +120,11 @@ def plot_stacked_area_chart(df, filename, sentence_count, output_dir="output_sta
     plt.ylabel("Anteil")
     plt.legend(title="Sentiment")
     plt.grid(True)
-    plt.savefig(f"{output_dir}/{filename}_{sentence_count}_stacked_sentiment_plot.png")
+    plt.savefig(f"{full_output_dir}/{filename}_{sentence_count}_stacked_sentiment_plot.png")
     plt.show()
 
 def save_results_to_txt(filename, sentiment_counts):
-    output_dir = 'output_results'
+    output_dir = get_code_path('output_results')
     os.makedirs(output_dir, exist_ok=True)
     total_sentiment = sentiment_counts.sum()
 
@@ -128,7 +137,7 @@ def save_results_to_txt(filename, sentiment_counts):
 def preprocess_data(filename, sample_size):
     print(f"Loading and preprocessing {filename}...")
     
-    df = read_tsv(f"Code/{filename}.tsv")
+    df = read_tsv(get_code_path(f"{filename}.tsv"))
     df = shorten_and_clean_df(df, filename, sample_size)
     df = remove_short_and_long_sentences(df)
     df = remove_duplicates(df)
