@@ -1,18 +1,26 @@
 import pandas as pd
 import nltk
+import os
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 import pyLDAvis
 import pyLDAvis.gensim_models as gensimvis
 
+# Get the directory where this script is located (Code folder)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def get_code_path(relative_path):
+    """Ensure all paths are relative to the Code directory."""
+    return os.path.join(SCRIPT_DIR, relative_path)
+
 # Download stopwords if not already present
 nltk.download('stopwords')
 german_stop_words = stopwords.words('german') + ["mitteleuropa", "mitteleuropas", "mitteleuropäisch", "mitteleuropäische", "mitteleuropäischen", "mitteleuropäischem", "mitteleuropäischer", "mitteleuropäisches"]
 
 # ----- 1. Indlæs data -----
-df1 = pd.read_csv("datasets_with_sentiments/mitteleuropa_100000.csv")
-df2 = pd.read_csv("datasets_with_sentiments/mitteleuropäisch_100000.csv")
+df1 = pd.read_csv(get_code_path("datasets_with_sentiments/mitteleuropa_100000.csv"))
+df2 = pd.read_csv(get_code_path("datasets_with_sentiments/mitteleuropäisch_100000.csv"))
 
 # Kombinér dem til én DataFrame
 df = pd.concat([df1, df2], ignore_index=True)
@@ -70,7 +78,12 @@ def show_topics_lda(texts, gruppenavn, n_topics=3, n_words=30):
         term_frequency=term_frequency
     )
 
-    pyLDAvis.save_html(data, f"lda_vis_{gruppe}.html")
+    # Create lda_results directory and save HTML file there
+    output_dir = get_code_path("lda_results")
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = os.path.join(output_dir, f"lda_vis_{gruppenavn}.html")
+    pyLDAvis.save_html(data, output_file)
+    print(f"Visualization saved to: {output_file}")
 
 # ----- 4. Kør for alle grupper -----
 for gruppe, tekster in groups.items():
