@@ -5,7 +5,7 @@ For the project a sentiment analysis model was used. This model judges the senti
 
 The analysis folder contains an academic in-depth analysis of the output *in German*. Below is a technical description of the project *in English*. The code folder contains the code and parts of the output of the code.
 
-The main focus of the project is the concept of *Mitteleuropa* - a historical term referring to Germany and its neighbouring countries. Other terms like *Deutschland* and *Europa* were also analysed as part of the project as well. However, to really dive deep into the concept of *Mitteleuropa*, the sentiment analysis of this term was combined with topic modelling - a technique for determining what themes are commonly discussed in sentences containing *Mitteleuropa*.
+The main focus of the project is the concept of *Mitteleuropa* - a historical term referring to Germany and its neighbouring countries. Other terms like *Deutschland* and *Europa* were analysed as part of the project as well. However, to really dive deep into the concept of *Mitteleuropa*, the sentiment analysis of this term was combined with topic modelling - a technique for determining what themes are commonly discussed in sentences containing *Mitteleuropa*.
 
 ## Technical overview
 The school books are available at https://ddc.dwds.de/dstar/gei_digital/. If we want to research a term (e.g. *Mitteleuropa*), we download a .tsv file from the website containing all sentences with the term.
@@ -28,4 +28,6 @@ The above process was used to research many different terms - e.g. *Afrika*, *Os
 
 3) An html file for each category is generated, containing useful information and pretty graphs about the topic modelling. The results in these html files were then analyzed by me. For example, it was clear that the positive sentences center on the following 3 topics: 1) Mitteleuropa as an industrial powerhouse led by Germany, 2) Mitteleuropa as a rich region with beautiful nature, and 3) Mitteleuropa as the center of civilization.
 
-Additionally, a number of tools at https://ddc.dwds.de/dstar/gei_digital/ were used. I also experimented with finetuning the sentiment analysis model on smaller historical datasets - however, the results were disappointing due to the low quality and quantity of the available data. The approach with masked language modelling produced significantly better results.
+Additionally, a number of tools at https://ddc.dwds.de/dstar/gei_digital/ were used for analysing the data. This e.g. includes tools for analyzing which words frequently cooccur in the same sentences (collocations). 
+
+I also experimented with finetuning the sentiment analysis model on smaller historical datasets - however, the results were disappointing due to the low quality and quantity of the available data. The approach with masked language modelling was a massive improvement over this.
