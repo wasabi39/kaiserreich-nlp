@@ -3,7 +3,6 @@ import os
 import re
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 from datasets import Dataset
 from transformers import pipeline
 
@@ -79,9 +78,7 @@ def shorten_and_clean_df(df, filename, max_length=DEFAULT_SAMPLE_SIZE):
 def clean_text(text):
     return html.unescape(text)
 
-
-def _save_text_to_file(data, folder_path, filename):
-    """Helper function to save text data to file."""
+def save_text_to_file(data, folder_path, filename):
     os.makedirs(folder_path, exist_ok=True)
     file_path = os.path.join(folder_path, filename)
     
@@ -93,20 +90,15 @@ def _save_text_to_file(data, folder_path, filename):
     return file_path
 
 def save_raw_text(df, term, count):
-    """Save the hit column to a txt file in the folder 'raw_text'."""
-    return _save_text_to_file(df['Hit'], 'raw_text', f"{term}_{count}.txt")
-
+    return save_text_to_file(df['Hit'], 'raw_text', f"{term}_{count}.txt")
 
 def save_filtered_text(df, term, count):
-    """Save the hit column to a txt file in the folder 'filtered_text' - only from the German Empire period."""
     filtered_data = df.loc[(df['Date'] >= GERMAN_EMPIRE_START) & (df['Date'] <= GERMAN_EMPIRE_END), 'Hit']
-    return _save_text_to_file(filtered_data, 'filtered_text', f"{term}_{count}.txt")
+    return save_text_to_file(filtered_data, 'filtered_text', f"{term}_{count}.txt")
 
 def plot_stacked_area_chart(df, filename, sentence_count, output_dir="output_stacked_area_chart"):
     """Create a stacked area chart showing sentiment distribution over time."""
     os.makedirs(output_dir, exist_ok=True)
-
-    #Group by year (not decade for more precision)
     df_counts = df.groupby(["Date", "Sentiment"]).size().unstack(fill_value=0)
 
     #Convert counts to proportions
@@ -133,39 +125,49 @@ def save_results_to_txt(filename, sentiment_counts):
             count = sentiment_counts[sentiment]
             f.write(f"{sentiment}: ({count}, {round(count / total_sentiment, 3)})\n")
 
-def process_sentiment_analysis(filename=FILE_NAME, sample_size=DEFAULT_SAMPLE_SIZE):
-    """Main function to process sentiment analysis on historical text data."""
-    print(f"Processing {filename} with sample size: {sample_size}")
+def preprocess_data(filename, sample_size):
+    print(f"Loading and preprocessing {filename}...")
     
-    # Load and preprocess data
     df = read_tsv(f"Code/{filename}.tsv")
     df = shorten_and_clean_df(df, filename, sample_size)
     df = remove_short_and_long_sentences(df)
     df = remove_duplicates(df)
     
-    # Save raw data
+    return df
+
+def save_preprocessed_data(df, filename, sample_size):
     save_raw_text(df, filename, sample_size)
     save_filtered_text(df, filename, sample_size)
     print("Finished preprocessing")
-    
-    # Analyze sentiment
+
+def analyze_and_display_sentiment(df):
     df = analyze_sentiment(df)
     print("\nSample results:")
     print(df.head())
     
-    # Generate and display results
     sentiment_counts = df['Sentiment'].value_counts()
     print(f"\nSentiment distribution:")
     print(sentiment_counts)
     
-    # Filter for German Empire period and save results
+    return df, sentiment_counts
+
+def save_final_results(df, filename, sample_size, sentiment_counts):
     df_filtered = df[(df['Date'] >= GERMAN_EMPIRE_START) & (df['Date'] <= GERMAN_EMPIRE_END)]
     save_dataframe(df, filename, sample_size)
     save_results_to_txt(filename, sentiment_counts)
     plot_stacked_area_chart(df_filtered, filename=filename, sentence_count=sample_size)
+
+def process_sentiment_analysis(filename=FILE_NAME, sample_size=DEFAULT_SAMPLE_SIZE):
+    """Main function to process sentiment analysis on historical text data."""
+    print(f"Processing {filename} with sample size: {sample_size}")
     
-    print(f"\nAnalysis complete! Processed {len(df)} sentences, {len(df_filtered)} from German Empire period.")
-    return df, df_filtered
+    df = preprocess_data(filename, sample_size)
+    save_preprocessed_data(df, filename, sample_size)
+
+    df, sentiment_counts = analyze_and_display_sentiment(df)
+    save_final_results(df, filename, sample_size, sentiment_counts)
+
+    print(f"\nAnalysis complete. Processed {len(df)} sentences.")
 
 
 if __name__ == "__main__":
